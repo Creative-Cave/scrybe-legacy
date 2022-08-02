@@ -1,6 +1,7 @@
 from discord.ext import commands
 from discord.commands import SlashCommandGroup
 from resources.get_library import *
+from datetime import datetime
 import resources.get_configs
 import discord
 import json
@@ -72,12 +73,12 @@ class Library(commands.Cog):
         library = get_library()["library"]
         e = discord.Embed(title="Writer's Cave Library")
         e.set_footer(
-            text="To view more information, including the links to read each book, run /library info <ID>")
+            text="To view more information, including the links to read each book, run /library info")
 
         for id in library:
             book = library[id]
             e.add_field(name=f"{book['title']}",
-                        value=f"by {book['author']}\n{human_rating(book)} *({len(book['reviews'])} reviews)*")
+                        value=f"by {book['author']}\n{human_rating(book)} *{len(book['reviews'])} reviews*")
 
         await r.edit_original_message(content=None, embed=e)
 
@@ -88,16 +89,13 @@ class Library(commands.Cog):
     async def info(self, ctx, book: discord.Option(choices=[discord.OptionChoice(name=library[book]["title"], value=book) for book in library])):
         r = await ctx.send_response(f"{loading} Thinking...")
         library = get_library()["library"]
-        if str(book) not in library:
-            return await ctx.send_response("There is no book with this ID. Try running `/library list` to see what books are available.", ephemeral=True)
-
         book = library[str(book)]
 
         verified_link = False
-
         for link in config["verified_links"]:
             if book["link"].startswith(link):
                 verified_link = True
+
 
         class LinkView(discord.ui.View):
             def __init__(self):
@@ -106,13 +104,14 @@ class Library(commands.Cog):
                     label=f"Read this book", style=discord.ButtonStyle.gray, url=book["link"], emoji="👀")
                 self.add_item(urlbutton)
 
+
         e = discord.Embed(
             title=book["title"], description=config["unverified_link_message"] if not verified_link else config["verified_link_message"].format(verified))
 
         e.add_field(name="Author", value=book["author"])
 
         e.add_field(
-            name="Rating", value=f'{human_rating(book)} (*{len(book["reviews"])} reviews)*')
+            name="Rating", value=f'{human_rating(book)}\n(*{len(book["reviews"])} reviews)*')
 
         await r.edit_original_message(content=None, embed=e, view=LinkView())
 
@@ -126,7 +125,8 @@ class Library(commands.Cog):
         add_review(book, {
             "rating": rating,
             "content": content,
-            "author": ctx.author.id
+            "author": ctx.author.id,
+            "timestamp": datetime.timestamp(datetime.now())
         })
         await r.edit_original_message(content="Review submitted!")
 

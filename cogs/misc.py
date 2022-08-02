@@ -37,10 +37,9 @@ class Misc(commands.Cog):
     async def report(self, ctx):
         await ctx.send_response(embed=discord.Embed(
             title="Found a problem or have a suggestion?",
-            description="Submit it [here](https://github.com/deltah404/scrybe-2/issues/new)",
+            description="Submit it [here](https://github.com/Writers-Cave/scrybe-2/issues/new)",
             colour=discord.Colour.blurple()
         ), ephemeral=True)
-
 
 
 def setup(bot):

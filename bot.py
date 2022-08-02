@@ -1,4 +1,6 @@
+from enum import auto
 from dotenv import load_dotenv
+from discord.ext import tasks
 import discord
 import os
 

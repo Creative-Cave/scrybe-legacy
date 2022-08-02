@@ -52,10 +52,52 @@ def add_book(title: str, author: str, url: str) -> dict:
     return r.json()
 
 
+def add_submission(title: str, author: str, url: str) -> dict:
+    content = get_library()
+    current_tick = content["data"]["submission_ticker"]
+
+    content["submissions"][str(current_tick)] = {
+        "title": title,
+        "author": author,
+        "link": url
+    }
+
+    content["data"]["submissions_ticker"] += 1
+
+    r = requests.patch(library_link, json={"files": {"library.json": {"content": json.dumps(
+        content, indent=4)}}}, headers={"Authorization": f"token {auth}"})
+    return r.json()
+
+
+def approve_submission(id):
+    content = get_library()
+    current_tick = content["data"]["id_ticker"]
+
+    submission_details = content["submissions"].pop(str(id))
+    content["library"][str(current_tick)] = {
+        "title": submission_details["title"],
+        "author": submission_details["author"],
+        "link": submission_details["link"]
+    }
+
+    r = requests.patch(library_link, json={"files": {"library.json": {"content": json.dumps(
+        content, indent=4)}}}, headers={"Authorization": f"token {auth}"})
+    return r.json()
+
+
+def decline_submission(id):
+    content = get_library()
+    del content["submissions"][str(id)]
+
+    r = requests.patch(library_link, json={"files": {"library.json": {"content": json.dumps(
+        content, indent=4)}}}, headers={"Authorization": f"token {auth}"})
+    return r.json()
+
+
 def remove_book(id):
     content = get_library()
 
-    content["library"][str(id)] = None
+    del content["library"][str(id)]
     r = requests.patch(library_link, json={"files": {"library.json": {"content": json.dumps(
         content, indent=4)}}}, headers={"Authorization": f"token {auth}"})
     return r.json()
